@@ -36,6 +36,13 @@
             padding: 5px;
             border-radius: 5px;
         }
+        #results {
+            margin-top: 10px;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -96,11 +103,13 @@
             // Log de la réponse pour déboguer
             console.log(result);
 
-            // Vérifier si la prédiction existe et l'afficher
-            if (result.prediction !== undefined) {
-                document.getElementById("results").innerText = `Predicted Digit: ${result.prediction}`;
+            // Vérifier si une erreur est présente
+            if (result.error) {
+                document.getElementById("results").innerHTML = `<span class="error">${result.error}</span>`;
             } else {
-                document.getElementById("results").innerText = "Error in prediction";
+                // Vérifier si la prédiction existe et l'afficher
+                document.getElementById("results").innerText = 
+                    `Predicted Digit: ${result.prediction} | Certainty: ${result.certainty}%`;
             }
         });
 

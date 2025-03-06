@@ -55,6 +55,7 @@ def predict():
     try:
         mem_info = psutil.virtual_memory()
         print(f"[INFO] Mémoire utilisée: {mem_info.percent}%")
+        
         # Vérifier si on reçoit bien des données
         data = request.get_json()
         if not data or "image" not in data:
@@ -69,14 +70,27 @@ def predict():
 
         # Faire la prédiction
         prediction = model.predict(image_array)
-        proba = model.predict_proba(image_array)
-        print(f"[INFO] Prédiction faite : {prediction}, {proba}")  # Log
+        proba = model.predict_proba(image_array)  # Probabilités pour chaque classe
+        predicted_class = int(prediction[0])  # Classe prédite
+        certainty = proba[0][predicted_class] * 100  # Probabilité associée à la classe prédite, en pourcentage
 
-        return jsonify({"prediction": int(prediction[0])})
+        print(f"[INFO] Prédiction faite : {prediction}, {proba}")  # Log
+        
+        # Vérification de la certitude (si inférieure à 60%, retourner une erreur)
+        if certainty < 60:
+            return jsonify({"error": "La certitude est trop faible pour une prédiction fiable. Essayez à nouveau."}), 400
+        
+        # Renvoi de la prédiction et de la certitude au frontend
+        return jsonify({
+            "prediction": predicted_class,
+            "certainty": round(certainty, 2)  # Certitude arrondie à 2 décimales
+        })
     
     except Exception as e:
         print("[ERROR]", traceback.format_exc())  # Affiche toute l'erreur
         return jsonify({"error": str(e)}), 500
+
+
 
 @app.route('/api/system_info', methods=['GET'])
 def system_info():
