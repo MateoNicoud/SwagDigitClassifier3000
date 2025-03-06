@@ -1,0 +1,24 @@
+[project]
+name = "webml"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Matéo NICOUD",email = "mateo.nicoud@le-campus-numerique.fr"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "flask (>=3.1.0,<4.0.0)",
+    "pillow (>=11.1.0,<12.0.0)",
+    "matplotlib (>=3.10.1,<4.0.0)",
+    "numpy (>=2.2.3,<3.0.0)",
+    "scikit-learn (>=1.6.1,<2.0.0)",
+    "jupyterlab (>=4.3.5,<5.0.0)",
+    "jupyter (>=1.1.1,<2.0.0)",
+    "psutil (>=7.0.0,<8.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
