@@ -26,9 +26,24 @@
             margin: 10px;
             cursor: pointer;
         }
+        #system-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 14px;
+            color: black;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
+    <div id="system-info">
+        <span id="cpu">CPU: Loading...</span> | 
+        <span id="memory">Memory: Loading...</span>
+    </div>
+
     <div id="content">
         <h1>SwagDigitClassifier3000</h1>
         <p>Please draw a digit and press the send button.</p>
@@ -89,6 +104,22 @@
             }
         });
 
+        // Fonction pour obtenir et afficher les informations système toutes les 2 secondes
+        async function updateSystemInfo() {
+            let response = await fetch("/api/system_info");
+            let data = await response.json();
+
+            if (data.cpu && data.memory) {
+                document.getElementById("cpu").innerText = `CPU: ${data.cpu}`;
+                document.getElementById("memory").innerText = `Memory: ${data.memory}`;
+            }
+
+            // Mettre à jour toutes les 2 secondes
+            setTimeout(updateSystemInfo, 2000);
+        }
+
+        // Démarrer la mise à jour en boucle des informations système
+        updateSystemInfo();
     </script>
 </body>
 </html>

@@ -78,6 +78,19 @@ def predict():
         print("[ERROR]", traceback.format_exc())  # Affiche toute l'erreur
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/system_info', methods=['GET'])
+def system_info():
+    try:
+        mem_info = psutil.virtual_memory()
+        cpu_info = psutil.cpu_percent(interval=1)  # Intervalle pour obtenir une estimation plus précise
+        
+        # Créer un dictionnaire avec les informations à renvoyer
+        return jsonify({
+            "memory": f"{mem_info.percent}%",
+            "cpu": f"{cpu_info}%"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
