@@ -176,3 +176,10 @@ Cette page HTML contient un canevas où les utilisateurs peuvent dessiner un chi
 ### 3. `Dockerfile`
 
 Le Dockerfile permet de construire un container pour déployer l'application. Il utilise **gunicorn** comme serveur WSGI pour Flask et expose le port 5000 pour l'accès à l'application.
+
+## Test de charge
+
+Vous pouvez lancer locust avec la commande : 
+```bash
+poetry run locust -f locust.py --host=http://localhost:5000
+``
