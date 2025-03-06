@@ -53,12 +53,20 @@
 
     <div id="content">
         <h1>SwagDigitClassifier3000</h1>
-        <p>Please draw a digit and press the send button.</p>
+        <p>Please draw a digit, enter the digit in the box below, and press the send button.</p>
         <canvas id="myDigit" width="300" height="300"></canvas>
+        
+        <!-- Champ pour entrer le chiffre -->
+        <div>
+            <label for="digit">Enter the digit: </label>
+            <input type="number" id="digit" min="0" max="9" required>
+        </div>
+        
         <p>
             <button id="clear">Clear</button>
             <button id="send">Send</button>
         </p>
+        
         <p id="results"></p>
     </div>
 
@@ -90,16 +98,23 @@
 
         document.getElementById("send").addEventListener("click", async () => {
             let imageBase64 = canvas.toDataURL("image/png").split(",")[1];
-            
+            let digit = document.getElementById("digit").value;  // Récupérer le chiffre saisi par l'utilisateur
+
+            // Vérifier que le chiffre est valide
+            if (digit === "" || digit < 0 || digit > 9) {
+                document.getElementById("results").innerHTML = `<span class="error">Please enter a valid digit (0-9).</span>`;
+                return;
+            }
+
             let response = await fetch("/api/predict", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ image: imageBase64 })
+                body: JSON.stringify({ image: imageBase64, label: digit })  // Envoyer l'image et le label
             });
 
             // Convertir la réponse en JSON
             let result = await response.json();
-            
+
             // Log de la réponse pour déboguer
             console.log(result);
 

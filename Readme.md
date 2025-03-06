@@ -182,4 +182,11 @@ Le Dockerfile permet de construire un container pour déployer l'application. Il
 Vous pouvez lancer locust avec la commande : 
 ```bash
 poetry run locust -f locust.py --host=http://localhost:5000
-``
+```
+
+## Database d'images
+Initialisation de la database image.db
+poetry run python sqlite.py
+
+## Mise à jour du model
+poetry run python update_model.py

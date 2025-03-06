@@ -8,6 +8,7 @@ import traceback  # Ajout pour afficher les erreurs détaillées
 import os
 from datetime import datetime
 import psutil 
+import sqlite3
 
 SAVE_DIR = "saved_images"
 os.makedirs(SAVE_DIR, exist_ok=True)
@@ -20,29 +21,53 @@ app = Flask(__name__)
 with open("digit_classifier.pkl", "rb") as model_file:
     model = pickle.load(model_file)
 
-def process_image(image_base64):
-    """Transforme une image encodée en base64 en un tableau numpy formaté pour le modèle."""
+
+def create_table():
+    conn = sqlite3.connect('images.db')
+    cursor = conn.cursor()
+    
+    # Créer la table si elle n'existe pas déjà
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS images (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            label INTEGER NOT NULL,
+            image BLOB NOT NULL
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
+
+create_table()  # Créer la table lors du démarrage
+
+def process_image(image_base64, label):
+    """Transforme une image encodée en base64 en un tableau numpy formaté pour le modèle et enregistre l'image avec le label dans SQLite."""
+    
+    # Décoder l'image de base64
     image_data = base64.b64decode(image_base64)
     image = Image.open(io.BytesIO(image_data))
 
-    # Sauvegarde de l'image originale
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    original_path = os.path.join(SAVE_DIR, f"original_{timestamp}.png")
-    image.save(original_path)
-
-    # Traitement de l'image
+    # Traitement de l'image (convertir en niveau de gris, inverser, rogner et redimensionner)
     image = image.convert("L")
     image = ImageOps.invert(image)
     bbox = image.getbbox()
     image = image.crop(bbox) if bbox else image
     image = image.resize((8, 8))
 
-    # Sauvegarde de l'image traitée
-    processed_path = os.path.join(SAVE_DIR, f"processed_{timestamp}.png")
-    image.save(processed_path)
-
-    # Transformation en array numpy
+    # Sauvegarder l'image traitée sous forme de tableau numpy pour la prédiction
     image_array = np.array(image).reshape(1, -1)
+
+    # Enregistrer l'image et le label dans la base de données SQLite
+    conn = sqlite3.connect('images.db')
+    cursor = conn.cursor()
+
+    # Insérer l'image et son label dans la base de données (en tant que BLOB)
+    cursor.execute('''
+        INSERT INTO images (label, image) VALUES (?, ?)
+    ''', (label, sqlite3.Binary(image_data)))  # Utiliser `sqlite3.Binary` pour stocker l'image en tant que BLOB
+
+    conn.commit()
+    conn.close()
 
     return image_array
 
@@ -62,10 +87,11 @@ def predict():
             return jsonify({"error": "Aucune image reçue"}), 400
         
         image_base64 = data["image"]
+        label = int(data["label"]) 
         print("[INFO] Image reçue en base64")  # Log dans la console
 
         # Traiter l'image
-        image_array = process_image(image_base64)
+        image_array = process_image(image_base64,label)
         print("[INFO] Image transformée en array numpy")  # Log
 
         # Faire la prédiction
